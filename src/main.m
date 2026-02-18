@@ -2,9 +2,9 @@ close all;
 clear;
 clc;
 
-coords_auburn_al = [32.60528971347516, -85.48672403168588];
-coords_chesapeake_va = [36.76863076642226, -76.28744597650036];
-coords_corpus_christi_tx = [27.795125685587532, -97.40576355243675];
+coords_auburn_al = [32.60528971347516, -85.48672403168588 212];
+coords_chesapeake_va = [36.76863076642226, -76.28744597650036 0];
+coords_corpus_christi_tx = [27.795125685587532, -97.40576355243675 1];
 
 % UTC time
 time = [ ...
@@ -44,5 +44,26 @@ iono_grid_params = [ ...
 
 [iono_pf_grid, iono_pf_grid_5, collision_freq, Bx, By, Bz] = gen_iono_grid_3d(...
 		time, sunspot_number, iono_grid_params, iono_grid_params, 1);
-		
+
+% calculate bearing
+% https://www.movable-type.co.uk/scripts/latlong.html
+% need elevation angle and bearing angle
+origin_rad = deg2rad(origin);
+terminus_rad = deg2rad(terminus);
+dist = terminus_rad - origin_rad;
+R = 6371e3;
+x = R*cos(dist(1))*cos(dist(2));
+y = R*cos(dist(1)*sin(dist(2)));
+z = R*sin(dist(1));
+d = sqrt(x^2 + y^2 + z^2);
+az = atan2(sin(dist(2))*cos(terminus(1)), cos(origin(1))*sin(terminus(1)) - sin(origin(1))*cos(terminus(1))*cos(dist(2)));
+% assume isosceles triangle
+
+elevs = 20:0.1:70;
+bearing = az + -10:0.1:10;
+freq = (1:1:20)*1e6;
+
+[ray_data, ray_path_data, ray_state_vec] = raytrace_3d(...
+        origin(1), origin(2), origin(3), 1:0.1:90)
+
 disp("done");
